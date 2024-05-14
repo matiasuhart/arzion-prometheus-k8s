@@ -1,0 +1,66 @@
+kube-prometheus-stack:
+  nameOverride: "arzion"
+
+  alertmanager:
+    enabled: true
+
+    alertmanagerSpec:
+      storage: 
+        volumeClaimTemplate:
+          spec:
+            storageClassName: alertmanager-gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 2Gi
+            #selector: {}
+      
+      # Uncomment this to get our alertmanager config
+      # configSecret: prometheus-alertmanager-config
+      
+
+  nodeExporter:
+    enabled: false
+
+  kubeStateMetrics:
+    enabled: false
+
+  prometheus:
+    prometheusSpec:
+      replicas: 2
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: prometheus-gp3
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+            #selector: {}
+
+      # Set for Alert Rules Autodiscovery
+      ruleSelectorNilUsesHelmValues: false
+      # Set for Service monitor autodiscovery
+      serviceMonitorSelectorNilUsesHelmValues: false
+
+  grafana:
+    enabled: true
+    admin:
+      existingSecret: prometheus-grafana-admin
+      userKey: admin_user
+      passwordKey: admin_password
+
+    # ingress:
+    #   enabled: true
+    #   hosts: ["grafana.mtu-it.com.ar"]
+    #   ingressClassName: traefik
+
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          url: http://arzion-logs-loki-gateway.logs.svc.cluster.local
+
+
